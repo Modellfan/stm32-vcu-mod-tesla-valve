@@ -37,53 +37,58 @@
 #include "printf.h"
 #include "stm32scheduler.h"
 #include "terminalcommands.h"
+#include "tesla_valve.h"
 
 #define PRINT_JSON 0
 
-static Stm32Scheduler* scheduler;
-static CanHardware* can;
-static CanMap* canMap;
+static Stm32Scheduler *scheduler;
+static CanHardware *can;
+static CanMap *canMap;
+static TeslaValve teslaValve;
 
-//sample 100ms task
+// sample 100ms task
 static void Ms100Task(void)
 {
-   //The following call toggles the LED output, so every 100ms
-   //The LED changes from on to off and back.
-   //Other calls:
-   //DigIo::led_out.Set(); //turns LED on
-   //DigIo::led_out.Clear(); //turns LED off
-   //For every entry in digio_prj.h there is a member in DigIo
+   // The following call toggles the LED output, so every 100ms
+   // The LED changes from on to off and back.
+   // Other calls:
+   // DigIo::led_out.Set(); //turns LED on
+   // DigIo::led_out.Clear(); //turns LED off
+   // For every entry in digio_prj.h there is a member in DigIo
    DigIo::led_out.Toggle();
-   //The boot loader enables the watchdog, we have to reset it
-   //at least every 2s or otherwise the controller is hard reset.
+   // The boot loader enables the watchdog, we have to reset it
+   // at least every 2s or otherwise the controller is hard reset.
    iwdg_reset();
-   //Calculate CPU load. Don't be surprised if it is zero.
+   // Calculate CPU load. Don't be surprised if it is zero.
    float cpuLoad = scheduler->GetCpuLoad();
-   //This sets a fixed point value WITHOUT calling the parm_Change() function
+   // This sets a fixed point value WITHOUT calling the parm_Change() function
    Param::SetFloat(Param::cpuload, cpuLoad / 10);
 
-   //If we chose to send CAN messages every 100 ms, do this here.
+   // If we chose to send CAN messages every 100 ms, do this here.
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_100MS)
       canMap->SendAll();
+
+   // Give calculation power to the module
+   teslaValve.Task100Ms();
 }
 
-//sample 10 ms task
+// sample 10 ms task
 static void Ms10Task(void)
 {
-   //Set timestamp of error message
+   // Set timestamp of error message
    ErrorMessage::SetTime(rtc_get_counter_val());
 
    if (DigIo::test_in.Get())
    {
-      //Post a test error message when our test input is high
+      // Post a test error message when our test input is high
       ErrorMessage::Post(ERR_TESTERROR);
    }
 
-   //AnaIn::<name>.Get() returns the filtered ADC value
-   //Param::SetInt() sets an integer value.
+   // AnaIn::<name>.Get() returns the filtered ADC value
+   // Param::SetInt() sets an integer value.
    Param::SetInt(Param::testain, AnaIn::test.Get());
 
-   //If we chose to send CAN messages every 10 ms, do this here.
+   // If we chose to send CAN messages every 10 ms, do this here.
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
       canMap->SendAll();
 }
@@ -94,13 +99,13 @@ void Param::Change(Param::PARAM_NUM paramNum)
    switch (paramNum)
    {
    default:
-      //Handle general parameter changes here. Add paramNum labels for handling specific parameters
+      // Handle general parameter changes here. Add paramNum labels for handling specific parameters
       break;
    }
 }
 
-//Whichever timer(s) you use for the scheduler, you have to
-//implement their ISRs here and call into the respective scheduler
+// Whichever timer(s) you use for the scheduler, you have to
+// implement their ISRs here and call into the respective scheduler
 extern "C" void tim2_isr(void)
 {
    scheduler->Run();
@@ -110,49 +115,49 @@ extern "C" int main(void)
 {
    extern const TERM_CMD termCmds[];
 
-   clock_setup(); //Must always come first
+   clock_setup(); // Must always come first
    rtc_setup();
    ANA_IN_CONFIGURE(ANA_IN_LIST);
    DIG_IO_CONFIGURE(DIG_IO_LIST);
-   AnaIn::Start(); //Starts background ADC conversion via DMA
-   write_bootloader_pininit(); //Instructs boot loader to initialize certain pins
+   AnaIn::Start();             // Starts background ADC conversion via DMA
+   write_bootloader_pininit(); // Instructs boot loader to initialize certain pins
 
-   tim_setup(); //Sample init of a timer
-   nvic_setup(); //Set up some interrupts
-   parm_load(); //Load stored parameters
+   tim_setup();  // Sample init of a timer
+   nvic_setup(); // Set up some interrupts
+   parm_load();  // Load stored parameters
 
-   Stm32Scheduler s(TIM2); //We never exit main so it's ok to put it on stack
+   Stm32Scheduler s(TIM2); // We never exit main so it's ok to put it on stack
    scheduler = &s;
-   //Initialize CAN1, including interrupts. Clock must be enabled in clock_setup()
+   // Initialize CAN1, including interrupts. Clock must be enabled in clock_setup()
    Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
    CanMap cm(&c);
    CanSdo sdo(&c, &cm);
-   sdo.SetNodeId(33); //Set node ID for SDO access e.g. by wifi module
-   //store a pointer for easier access
+   sdo.SetNodeId(33); // Set node ID for SDO access e.g. by wifi module
+   // store a pointer for easier access
    can = &c;
    canMap = &cm;
 
-   //This is all we need to do to set up a terminal on USART3
+   // This is all we need to do to set up a terminal on USART3
    Terminal t(USART3, termCmds);
    TerminalCommands::SetCanMap(canMap);
 
-   //Up to four tasks can be added to each timer scheduler
-   //AddTask takes a function pointer and a calling interval in milliseconds.
-   //The longest interval is 655ms due to hardware restrictions
-   //You have to enable the interrupt (int this case for TIM2) in nvic_setup()
-   //There you can also configure the priority of the scheduler over other interrupts
+   // Up to four tasks can be added to each timer scheduler
+   // AddTask takes a function pointer and a calling interval in milliseconds.
+   // The longest interval is 655ms due to hardware restrictions
+   // You have to enable the interrupt (int this case for TIM2) in nvic_setup()
+   // There you can also configure the priority of the scheduler over other interrupts
    s.AddTask(Ms10Task, 10);
    s.AddTask(Ms100Task, 100);
 
-   //backward compatibility, version 4 was the first to support the "stream" command
+   // backward compatibility, version 4 was the first to support the "stream" command
    Param::SetInt(Param::version, 4);
-   Param::Change(Param::PARAM_LAST); //Call callback one for general parameter propagation
+   Param::Change(Param::PARAM_LAST); // Call callback one for general parameter propagation
 
-   //Now all our main() does is running the terminal
-   //All other processing takes place in the scheduler or other interrupt service routines
-   //The terminal has lowest priority, so even loading it down heavily will not disturb
-   //our more important processing routines.
-   while(1)
+   // Now all our main() does is running the terminal
+   // All other processing takes place in the scheduler or other interrupt service routines
+   // The terminal has lowest priority, so even loading it down heavily will not disturb
+   // our more important processing routines.
+   while (1)
    {
       char c = 0;
       t.Run();
@@ -162,7 +167,5 @@ extern "C" int main(void)
       }
    }
 
-
    return 0;
 }
-

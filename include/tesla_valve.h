@@ -20,8 +20,7 @@
 
  #ifndef TESLA_VALVE_H
  #define TESLA_VALVE_H
- 
- #include "utils.h"
+
  #include "params.h"
  #include "anain.h"
  #include "hwdefs.h"
