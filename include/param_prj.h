@@ -53,11 +53,13 @@
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      4,      2,      1   ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      2   ) \
     PARAM_ENTRY(CAT_TEST,    testparam,   "Hz",      -100,   1000,   0,      0   ) \
+    PARAM_ENTRY(CAT_VALVE,   valve_out, ONOFF,     0,      1,      0,      100 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
     VALUE_ENTRY(version,     VERSTR,  2001 ) \
     VALUE_ENTRY(lasterr,     errorListString,  2002 ) \
     VALUE_ENTRY(testain,     "dig",   2003 ) \
-    VALUE_ENTRY(cpuload,     "%",     2004 )
+    VALUE_ENTRY(cpuload,     "%",     2004 ) \
+    VALUE_ENTRY(valve_in,    "V",                 2100 ) 
 
 
 /***** Enum String definitions *****/
@@ -66,6 +68,8 @@
 #define CANPERIODS   "0=100ms, 1=10ms"
 #define CAT_TEST     "Testing"
 #define CAT_COMM     "Communication"
+#define ONOFF        "0=Off, 1=On, 2=na"
+#define CAT_VALVE "Tesla Coolant Valve"
 
 #define VERSTR STRINGIFY(4=VER-name)
 
