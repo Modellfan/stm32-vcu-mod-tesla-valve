@@ -39,7 +39,7 @@
  */
 
  //Define a version string of your firmware here
-#define VER 1.00.R
+#define VER 1.02.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -53,13 +53,16 @@
     PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      4,      2,      1   ) \
     PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      2   ) \
     PARAM_ENTRY(CAT_TEST,    testparam,   "Hz",      -100,   1000,   0,      0   ) \
-    PARAM_ENTRY(CAT_VALVE,   valve_out, ONOFF,     0,      1,      0,      100 ) \
+    PARAM_ENTRY(CAT_VALVE,   valve_out, VALVE,     0,      2,      0,      100 ) \
     VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
     VALUE_ENTRY(version,     VERSTR,  2001 ) \
     VALUE_ENTRY(lasterr,     errorListString,  2002 ) \
     VALUE_ENTRY(testain,     "dig",   2003 ) \
     VALUE_ENTRY(cpuload,     "%",     2004 ) \
-    VALUE_ENTRY(valve_in,    "V",                 2100 ) 
+    VALUE_ENTRY(valve_in_raw,    "V",                 2100 ) \
+    VALUE_ENTRY(valve_in,    VALVE_STATE,                 2101 ) \
+    VALUE_ENTRY(valve_auto_target,    VALVE_TARGET,                 2102 ) 
+    
 
 
 /***** Enum String definitions *****/
@@ -69,6 +72,9 @@
 #define CAT_TEST     "Testing"
 #define CAT_COMM     "Communication"
 #define ONOFF        "0=Off, 1=On, 2=na"
+#define VALVE        "0=180deg, 1=90deg, 2=Auto"
+#define VALVE_STATE  "0=180deg, 1=90deg, 2=Transition"
+#define VALVE_TARGET  "0=180deg, 1=90deg"
 #define CAT_VALVE "Tesla Coolant Valve"
 
 #define VERSTR STRINGIFY(4=VER-name)

@@ -1,67 +1,83 @@
-/*
- * This file is part of the ZombieVerter project.
- *
- * Copyright (C) 2012-2020 Johannes Huebner <dev@johanneshuebner.com>
- *               2021-2022 Damien Maguire <info@evbmw.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+#ifndef TESLA_VALVE_H
+#define TESLA_VALVE_H
 
- #ifndef TESLA_VALVE_H
- #define TESLA_VALVE_H
+#include "params.h"
+#include "anain.h"
+#include "hwdefs.h"
+#include "digio.h"
 
- #include "params.h"
- #include "anain.h"
- #include "hwdefs.h"
- #include "digio.h"
- 
- class TeslaValve
- {
- public:
-     /** Default constructor */
-     TeslaValve() {}
- 
-     /** Write parameter to the digital pin */
-     void WriteValveState()
-     {
-         int valveState = Param::GetInt(Param::valve_out);
-         if (valveState == 1)
-         {
-             DigIo::tesla_valve_out.Set();
-         }
-         else
-         {
-             DigIo::tesla_valve_out.Clear();
-         }
-     }
- 
-     /** Read the analog pin and update the parameter */
-     void ReadValveState()
-     {
-         float valveInput = AnaIn::tesla_valve_in.Get();
-         Param::SetFloat(Param::valve_in, valveInput);
-     }
- 
-     /** Task to be executed every 100ms */
-     void Task100Ms()
-     {
-         WriteValveState();
-         ReadValveState();
-     }
- };
- 
- #endif // TESLA_VALVE_H
- 
- 
- 
+#define VOLTAGE_DIVIDER_RATIO 0.0059f // 4.9k to 1k voltage divider
+#define VALVE_90_DEG_VOLTAGE 11.71f   // Example threshold voltage
+#define VALVE_180_DEG_VOLTAGE 3.06f   // Example threshold voltage
+#define VALVE_TOLERANCE 0.25f         // Tolerance for determining valve state
+
+class TeslaValve
+{
+public:
+    /** Default constructor */
+    TeslaValve() {}
+
+    /** Write parameter to the digital pin */
+    void WriteValveState()
+    {
+        int valveState = Param::GetInt(Param::valve_out);
+        if (valveState == 1)
+        {
+            DigIo::tesla_valve_out.Set();
+        }
+        else
+        {
+            DigIo::tesla_valve_out.Clear();
+        }
+    }
+
+    /** Read the analog pin, process value and update the parameter */
+    void ReadValveState()
+    {
+        float rawVoltage = AnaIn::tesla_valve_in.Get() * VOLTAGE_DIVIDER_RATIO;
+        Param::SetFloat(Param::valve_in_raw, rawVoltage);
+
+        if (rawVoltage >= (VALVE_90_DEG_VOLTAGE - VALVE_TOLERANCE) && rawVoltage <= (VALVE_90_DEG_VOLTAGE + VALVE_TOLERANCE))
+        {
+            Param::SetInt(Param::valve_in, 1); // 90°
+        }
+        else if (rawVoltage >= (VALVE_180_DEG_VOLTAGE - VALVE_TOLERANCE) && rawVoltage <= (VALVE_180_DEG_VOLTAGE + VALVE_TOLERANCE))
+        {
+            Param::SetInt(Param::valve_in, 0); // 180°
+        }
+        else
+        {
+            Param::SetInt(Param::valve_in, 2); // In Transition
+        }
+    }
+
+    /** Control logic for auto mode */
+    void ControlAutoMode()
+    {
+        int autoTarget = Param::GetInt(Param::valve_auto_target);
+        if (autoTarget == 1)
+        {
+            DigIo::tesla_valve_out.Set(); // Set to 90°
+        }
+        else
+        {
+            DigIo::tesla_valve_out.Clear(); // Set to 180°
+        }
+    }
+
+    /** Task to be executed every 100ms */
+    void Task100Ms()
+    {
+        ReadValveState();
+        if (Param::GetInt(Param::valve_out) == 2)
+        {
+            ControlAutoMode();
+        }
+        else
+        {
+            WriteValveState();
+        }
+    }
+};
+
+#endif // TESLA_VALVE_H
