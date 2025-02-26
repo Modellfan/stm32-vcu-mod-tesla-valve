@@ -38,16 +38,16 @@
 #include "stm32scheduler.h"
 #include "terminalcommands.h"
 #include "tesla_valve.h"
-#include "MLBevoCharger.h"
+#include "tesla_coolant_pump.h"
 
 #define PRINT_JSON 0
 
 static Stm32Scheduler *scheduler;
 static CanHardware *can;
 static CanMap *canMap;
+static TeslaCoolantPump coolantPump;
 static TeslaValve teslaValve;
-static MLBevoCharger mlbevocharger;
-static Chargerhw* selectedCharger = &mlbevocharger;
+
 
 // sample 100ms task
 static void Ms100Task(void)
@@ -73,6 +73,7 @@ static void Ms100Task(void)
 
    // Give calculation power to the module
    teslaValve.Task100Ms();
+   coolantPump.Task100Ms();
 }
 
 // sample 10 ms task
@@ -87,13 +88,16 @@ static void Ms10Task(void)
       ErrorMessage::Post(ERR_TESTERROR);
    }
 
-   // AnaIn::<name>.Get() returns the filtered ADC value
-   // Param::SetInt() sets an integer value.
-   Param::SetInt(Param::testain, AnaIn::test.Get());
 
    // If we chose to send CAN messages every 10 ms, do this here.
    if (Param::GetInt(Param::canperiod) == CAN_PERIOD_10MS)
       canMap->SendAll();
+}
+
+// sample 1 ms task
+static void Ms1Task(void)
+{
+ //coolantPump.Task1Ms();
 }
 
 /** This function is called when the user changes a parameter */
@@ -149,6 +153,7 @@ extern "C" int main(void)
    // The longest interval is 655ms due to hardware restrictions
    // You have to enable the interrupt (int this case for TIM2) in nvic_setup()
    // There you can also configure the priority of the scheduler over other interrupts
+   s.AddTask(Ms1Task, 1);
    s.AddTask(Ms10Task, 10);
    s.AddTask(Ms100Task, 100);
 

@@ -71,13 +71,13 @@ public:
         pwm_on_time = (pwm * PWM_PERIOD_MS) / 100;
 
         // Reset timer for PWM control
-        last_pwm_update = HAL_GetTick();
+        last_pwm_update = rtc_get_counter_val();
         pwm_state = true; // Start in ON state
-        DigIo::coolant_pump_out.Clear(); // Turn ON (Active Low)
+        DigIo::tesla_coolant_pump_out.Clear(); // Turn ON (Active Low)
     }
 
     /** Hardware timer-based PWM control */
-    void HandlePWM()
+    void Task1Ms()
     {
         /*
          *  Start --> [Check Elapsed Time HAL_GetTick()] --> (Time > ON Time?)
@@ -93,13 +93,15 @@ public:
          *                          End
          */
 
-        uint32_t current_time = HAL_GetTick();
+        uint32_t current_time = rtc_get_counter_val();
         uint32_t elapsed_time = current_time - last_pwm_update;
 
         if (pwm_state && elapsed_time >= pwm_on_time)
         {
             // Turn OFF pump after ON duration is reached
-            DigIo::coolant_pump_out.Set();
+            DigIo::tesla_coolant_pump_out.Set();
+            DigIo::led_out.Set(); //turns LED on
+
             pwm_state = false;
         }
         else if (!pwm_state && elapsed_time >= PWM_PERIOD_MS)
@@ -107,7 +109,8 @@ public:
             // Reset cycle after full PWM period
             last_pwm_update = current_time;
             pwm_state = true;
-            DigIo::coolant_pump_out.Clear(); // Turn ON (Active Low)
+            DigIo::tesla_coolant_pump_out.Clear(); // Turn ON (Active Low)
+            DigIo::led_out.Clear(); //turns LED off
         }
     }
 };
