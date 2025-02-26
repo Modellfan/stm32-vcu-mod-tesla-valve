@@ -52,7 +52,7 @@ static void Ms100Task(void)
    // The following call toggles the LED output, so every 100ms
    // The LED changes from on to off and back.
    // Other calls:
-   // DigIo::led_out.Set(); //turns LED on
+   //DigIo::led_out.Set(); //turns LED on
    // DigIo::led_out.Clear(); //turns LED off
    // For every entry in digio_prj.h there is a member in DigIo
    DigIo::led_out.Toggle();
@@ -106,9 +106,9 @@ void Param::Change(Param::PARAM_NUM paramNum)
 
 // Whichever timer(s) you use for the scheduler, you have to
 // implement their ISRs here and call into the respective scheduler
-extern "C" void tim2_isr(void)
+extern "C" void tim4_isr(void)
 {
-   scheduler->Run();
+    scheduler->Run();
 }
 
 extern "C" int main(void)
@@ -126,7 +126,7 @@ extern "C" int main(void)
    nvic_setup(); // Set up some interrupts
    parm_load();  // Load stored parameters
 
-   Stm32Scheduler s(TIM2); // We never exit main so it's ok to put it on stack
+   Stm32Scheduler s(TIM4); // We never exit main so it's ok to put it on stack
    scheduler = &s;
    // Initialize CAN1, including interrupts. Clock must be enabled in clock_setup()
    Stm32Can c(CAN1, (CanHardware::baudrates)Param::GetInt(Param::canspeed));
