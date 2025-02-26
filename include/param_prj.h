@@ -38,49 +38,51 @@
  * IDs are 16 bit, so 65535 is the maximum
  */
 
- //Define a version string of your firmware here
-#define VER 1.02.R
+// Define a version string of your firmware here
+#define VER 1.03.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
    2. Temporary parameters (id = 0)
    3. Display values
  */
-//Next param id (increase when adding new parameter!): 3
-//Next value Id: 2005
+// Next param id (increase when adding new parameter!): 3
+// Next value Id: 2005
 /*              category     name         unit       min     max     default id */
-#define PARAM_LIST \
-    PARAM_ENTRY(CAT_COMM,    canspeed,    CANSPEEDS, 0,      4,      2,      1   ) \
-    PARAM_ENTRY(CAT_COMM,    canperiod,   CANPERIODS,0,      1,      0,      2   ) \
-    PARAM_ENTRY(CAT_TEST,    testparam,   "Hz",      -100,   1000,   0,      0   ) \
-    PARAM_ENTRY(CAT_VALVE,   valve_out, VALVE,     0,      2,      0,      100 ) \
-    VALUE_ENTRY(opmode,      OPMODES, 2000 ) \
-    VALUE_ENTRY(version,     VERSTR,  2001 ) \
-    VALUE_ENTRY(lasterr,     errorListString,  2002 ) \
-    VALUE_ENTRY(testain,     "dig",   2003 ) \
-    VALUE_ENTRY(cpuload,     "%",     2004 ) \
-    VALUE_ENTRY(valve_in_raw,    "V",                 2100 ) \
-    VALUE_ENTRY(valve_in,    VALVE_STATE,                 2101 ) \
-    VALUE_ENTRY(valve_auto_target,    VALVE_TARGET,                 2102 ) 
-    
-
+#define PARAM_LIST                                                                     \
+   PARAM_ENTRY(CAT_COMM, canspeed, CANSPEEDS, 0, 4, 2, 1)                              \
+   PARAM_ENTRY(CAT_COMM, canperiod, CANPERIODS, 0, 1, 0, 2)                            \
+   PARAM_ENTRY(CAT_TEST, testparam, "Hz", -100, 1000, 0, 0)                            \
+   PARAM_ENTRY(CAT_VALVE, valve_out, VALVE, 0, 2, 0, 100)                              \
+   PARAM_ENTRY(CAT_TESLA_COOLANT_PUMP, coolant_pump_mode, AUTO_MANUAL, 0, 1, 0, 101)         \
+   PARAM_ENTRY(CAT_TESLA_COOLANT_PUMP, coolant_pump_manual_value, "RPM", 0, 4700, 0, 102) \
+   VALUE_ENTRY(opmode, OPMODES, 2000)                                                  \
+   VALUE_ENTRY(version, VERSTR, 2001)                                                  \
+   VALUE_ENTRY(lasterr, errorListString, 2002)                                         \
+   VALUE_ENTRY(testain, "dig", 2003)                                                   \
+   VALUE_ENTRY(cpuload, "%", 2004)                                                     \
+   VALUE_ENTRY(valve_in_raw, "V", 2100)                                                \
+   VALUE_ENTRY(valve_in, VALVE_STATE, 2101)                                            \
+   VALUE_ENTRY(valve_auto_target, VALVE_TARGET, 2102)                                  \
+   VALUE_ENTRY(coolant_pump_automatic_value, "RPM", 2103)
 
 /***** Enum String definitions *****/
-#define OPMODES      "0=Off, 1=Run"
-#define CANSPEEDS    "0=125k, 1=250k, 2=500k, 3=800k, 4=1M"
-#define CANPERIODS   "0=100ms, 1=10ms"
-#define CAT_TEST     "Testing"
-#define CAT_COMM     "Communication"
-#define ONOFF        "0=Off, 1=On, 2=na"
-#define VALVE        "0=180deg, 1=90deg, 2=Auto"
-#define VALVE_STATE  "0=180deg, 1=90deg, 2=Transition"
-#define VALVE_TARGET  "0=180deg, 1=90deg"
+#define OPMODES "0=Off, 1=Run"
+#define CANSPEEDS "0=125k, 1=250k, 2=500k, 3=800k, 4=1M"
+#define CANPERIODS "0=100ms, 1=10ms"
+#define CAT_TEST "Testing"
+#define CAT_COMM "Communication"
+#define ONOFF "0=Off, 1=On, 2=na"
+#define VALVE "0=180deg, 1=90deg, 2=Auto"
+#define VALVE_STATE "0=180deg, 1=90deg, 2=Transition"
+#define VALVE_TARGET "0=180deg, 1=90deg"
 #define CAT_VALVE "Tesla Coolant Valve"
+#define AUTO_MANUAL "0=Manual, 1=Automatic"
+#define CAT_TESLA_COOLANT_PUMP "Tesla Coolant Pump"
 
-#define VERSTR STRINGIFY(4=VER-name)
+#define VERSTR STRINGIFY(4 = VER - name)
 
 /***** enums ******/
-
 
 enum _canperiods
 {
@@ -96,6 +98,5 @@ enum _modes
    MOD_LAST
 };
 
-//Generated enum-string for possible errors
-extern const char* errorListString;
-
+// Generated enum-string for possible errors
+extern const char *errorListString;

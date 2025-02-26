@@ -23,18 +23,18 @@ public:
         int valveState = Param::GetInt(Param::valve_out);
         if (valveState == 1)
         {
-            DigIo::tesla_valve_out.Set();
+            DigIo::tesla_coolant_valve_1_out.Set();
         }
         else
         {
-            DigIo::tesla_valve_out.Clear();
+            DigIo::tesla_coolant_valve_1_out.Clear();
         }
     }
 
     /** Read the analog pin, process value and update the parameter */
     void ReadValveState()
     {
-        float rawVoltage = AnaIn::tesla_valve_in.Get() * VOLTAGE_DIVIDER_RATIO;
+        float rawVoltage = AnaIn::tesla_coolant_valve_1_in.Get() * VOLTAGE_DIVIDER_RATIO;
         Param::SetFloat(Param::valve_in_raw, rawVoltage);
 
         if (rawVoltage >= (VALVE_90_DEG_VOLTAGE - VALVE_TOLERANCE) && rawVoltage <= (VALVE_90_DEG_VOLTAGE + VALVE_TOLERANCE))
@@ -57,11 +57,11 @@ public:
         int autoTarget = Param::GetInt(Param::valve_auto_target);
         if (autoTarget == 1)
         {
-            DigIo::tesla_valve_out.Set(); // Set to 90°
+            DigIo::tesla_coolant_valve_1_out.Set(); // Set to 90°
         }
         else
         {
-            DigIo::tesla_valve_out.Clear(); // Set to 180°
+            DigIo::tesla_coolant_valve_1_out.Clear(); // Set to 180°
         }
     }
 

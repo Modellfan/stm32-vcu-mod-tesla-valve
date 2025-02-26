@@ -11,6 +11,16 @@
 #define DIG_IO_LIST                                         \
     DIG_IO_ENTRY(test_in, GPIOB, GPIO5, PinMode::INPUT_FLT) \
     DIG_IO_ENTRY(led_out, GPIOC, GPIO12, PinMode::OUTPUT)   \
-    DIG_IO_ENTRY(tesla_valve_out, GPIOD, GPIO13, PinMode::OUTPUT) // also labeled as gp_out3
-
+    DIG_IO_ENTRY(tesla_coolant_valve_1_out, GPIOD, GPIO13, PinMode::OUTPUT) \ 
+    DIG_IO_ENTRY(tesla_coolant_valve_2_out, GPIOD, GPIO14, PinMode::OUTPUT) \ 
+    DIG_IO_ENTRY(tesla_coolant_pump_out, GPIOD, GPIO15, PinMode::OUTPUT) \
 #endif // PinMode_PRJ_H_INCLUDED
+
+// DIG_IO_ENTRY(vacuum_pump_out, ) \
+// DIG_IO_ENTRY(servo_pump_out,) 
+// DIG_IO_ENTRY(cabin_heater_out,)
+// DIG_IO_ENTRY(cabin_heater_out,)
+
+//GP1 Out = PD15
+//GP2 Out = PD14
+//GP3 Out = PD13

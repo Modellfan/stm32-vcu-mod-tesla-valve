@@ -38,6 +38,7 @@
 #include "stm32scheduler.h"
 #include "terminalcommands.h"
 #include "tesla_valve.h"
+#include "MLBevoCharger.h"
 
 #define PRINT_JSON 0
 
@@ -45,6 +46,8 @@ static Stm32Scheduler *scheduler;
 static CanHardware *can;
 static CanMap *canMap;
 static TeslaValve teslaValve;
+static MLBevoCharger mlbevocharger;
+static Chargerhw* selectedCharger = &mlbevocharger;
 
 // sample 100ms task
 static void Ms100Task(void)

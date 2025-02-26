@@ -14,7 +14,13 @@
 
 // Here you specify a list of analog inputs, see main.cpp on how to use them
 #define ANA_IN_LIST \
-   ANA_IN_ENTRY(test, GPIOC, 1) \
-   ANA_IN_ENTRY(tesla_valve_in, GPIOC, 2) //als labeled as GP_analog1
-
+   ANA_IN_ENTRY(tesla_coolant_valve_1_in, GPIOC, 0) \
+   ANA_IN_ENTRY(tesla_coolant_valve_2_in, GPIOC, 1) \
+   ANA_IN_ENTRY(vacuum_sensor, GPIOC, 3) 
 #endif // ANAIN_PRJ_H_INCLUDED
+
+//All analog are 5V !!!
+//PC0 = Throttle 1
+//PC1 = Throttle 2
+//PC2 = Analog 1 in
+//PC3 = Analog 2 in 
