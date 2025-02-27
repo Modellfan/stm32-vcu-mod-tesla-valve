@@ -58,7 +58,7 @@ static void Ms100Task(void)
    // DigIo::led_out.Set(); //turns LED on
    // DigIo::led_out.Clear(); //turns LED off
    // For every entry in digio_prj.h there is a member in DigIo
-   DigIo::led_out.Toggle();
+   //DigIo::led_out.Toggle();
    // The boot loader enables the watchdog, we have to reset it
    // at least every 2s or otherwise the controller is hard reset.
    iwdg_reset();
@@ -97,7 +97,7 @@ static void Ms10Task(void)
 // sample 1 ms task
 static void Ms1Task(void)
 {
- //coolantPump.Task1Ms();
+  coolantPump.Task1Ms();
 }
 
 /** This function is called when the user changes a parameter */
@@ -155,7 +155,7 @@ extern "C" int main(void)
    // There you can also configure the priority of the scheduler over other interrupts
    s.AddTask(Ms1Task, 1);
    s.AddTask(Ms10Task, 10);
-   s.AddTask(Ms100Task, 100);
+   s.AddTask(Ms100Task, 500);
 
    // backward compatibility, version 4 was the first to support the "stream" command
    Param::SetInt(Param::version, 4);

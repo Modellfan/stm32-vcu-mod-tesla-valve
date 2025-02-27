@@ -7,15 +7,15 @@
 #include "anain.h"
 
 #define PWM_PERIOD_MS 500   // 2Hz PWM (500ms cycle)
+#define PWM_RESOLUTION_MS 1 // 1ms software PWM resolution
 #define MAX_RPM 4700        // Maximum RPM allowed
 #define MIN_RPM 0           // Minimum RPM allowed
 
 class TeslaCoolantPump
 {
 private:
-    uint32_t last_pwm_update = 0;  // Timestamp for PWM update
-    uint16_t pwm_on_time = 0;      // ON time in milliseconds
-    bool pwm_state = false;        // Current PWM state (ON/OFF)
+    volatile uint16_t pwm_counter = 0; // PWM cycle counter (0-500ms)
+    volatile uint8_t pwm_duty_cycle = 20; // Default PWM at 20% (750 RPM)
 
 public:
     /** Default constructor */
@@ -62,55 +62,51 @@ public:
         uint8_t pwm = (target_rpm + 550) / 65.8;
 
         // Ensure PWM is within valid ranges
-        if (pwm <= 17)
-            pwm = 10; // 0 RPM
-        else if (pwm >= 80 )
+        if (pwm  <= 17)
+            pwm = 10; // Set to safe OFF if invalid
+        else if (pwm >= 80)
             pwm = 80; // 4700 RPM
 
-        // Compute ON time for new PWM cycle
-        pwm_on_time = (pwm * PWM_PERIOD_MS) / 100;
-
-        // Reset timer for PWM control
-        last_pwm_update = rtc_get_counter_val();
-        pwm_state = true; // Start in ON state
-        DigIo::tesla_coolant_pump_out.Clear(); // Turn ON (Active Low)
+        pwm_duty_cycle = pwm; // Update global duty cycle
     }
 
-    /** Hardware timer-based PWM control */
+    /** Task to be executed every 1ms for software PWM */
     void Task1Ms()
     {
         /*
-         *  Start --> [Check Elapsed Time HAL_GetTick()] --> (Time > ON Time?)
+         *  Start --> [Increment PWM Counter] --> (Counter >= 500ms?)
          *                          | Yes |         | No |
-         *                  [Switch OFF Pump]      [Continue ON]
+         *                  [Reset Counter]      [Continue]
          *                          |
          *                          v
-         *        (Time > PWM_PERIOD_MS?) --> [Yes] --> [Restart PWM Cycle]
+         *        (pwm_counter < on_time?) --> [Yes] --> [Pump ON (GND)]
          *                           | No |
-         *                        [Continue OFF]
+         *                        [Pump OFF]
          *                           |
          *                           v
          *                          End
          */
 
-        uint32_t current_time = rtc_get_counter_val();
-        uint32_t elapsed_time = current_time - last_pwm_update;
+        pwm_counter++;
 
-        if (pwm_state && elapsed_time >= pwm_on_time)
+        if (pwm_counter >= PWM_PERIOD_MS)
         {
-            // Turn OFF pump after ON duration is reached
-            DigIo::tesla_coolant_pump_out.Set();
-            DigIo::led_out.Set(); //turns LED on
-
-            pwm_state = false;
+            pwm_counter = 0; // Reset every 500ms
         }
-        else if (!pwm_state && elapsed_time >= PWM_PERIOD_MS)
+
+        // Compute ON time
+        uint16_t on_time = (pwm_duty_cycle * PWM_PERIOD_MS) / 100;
+
+        // Active low control (ON = GND, OFF = VCC)
+        if (pwm_counter < on_time)
         {
-            // Reset cycle after full PWM period
-            last_pwm_update = current_time;
-            pwm_state = true;
-            DigIo::tesla_coolant_pump_out.Clear(); // Turn ON (Active Low)
-            DigIo::led_out.Clear(); //turns LED off
+            DigIo::tesla_coolant_pump_out.Clear(); // ON (grounded)
+            DigIo::led_out.Set();
+        }
+        else
+        {
+            DigIo::tesla_coolant_pump_out.Set(); // OFF
+            DigIo::led_out.Clear();
         }
     }
 };

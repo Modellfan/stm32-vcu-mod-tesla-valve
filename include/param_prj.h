@@ -39,7 +39,7 @@
  */
 
 // Define a version string of your firmware here
-#define VER 1.04.R
+#define VER 1.05.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -80,7 +80,7 @@
 #define AUTO_MANUAL "0=Manual, 1=Automatic"
 #define CAT_TESLA_COOLANT_PUMP "Tesla Coolant Pump"
 
-#define VERSTR STRINGIFY(4 = VER)
+#define VERSTR STRINGIFY(4=VER-name)
 
 /***** enums ******/
 
