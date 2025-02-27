@@ -8,9 +8,8 @@
  * or pull-down (INPUT_PD) or be an output (OUTPUT)
  */
 
-#define DIG_IO_LIST \
+#define DIG_IO_LIST                                         \
     DIG_IO_ENTRY(test_in, GPIOB, GPIO5, PinMode::INPUT_FLT) \
-    DIG_IO_ENTRY(led_out, GPIOE, GPIO2, PinMode::OUTPUT) \
-    DIG_IO_ENTRY(tesla_valve_out, GPIOD, GPIO13, PinMode::OUTPUT) // also labeled as gp_out3
-
+    DIG_IO_ENTRY(led_out, GPIOE, GPIO2, PinMode::OUTPUT)   \
+    DIG_IO_ENTRY(tesla_valve_out, GPIOD, GPIO13, PinMode::OUTPUT) 
 #endif // PinMode_PRJ_H_INCLUDED
