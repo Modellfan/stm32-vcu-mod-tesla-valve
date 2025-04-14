@@ -39,7 +39,7 @@
  */
 
 // Define a version string of your firmware here
-#define VER 1.05.R
+#define VER 1.06.R
 
 /* Entries must be ordered as follows:
    1. Saveable parameters (id != 0)
@@ -54,8 +54,12 @@
    PARAM_ENTRY(CAT_COMM, canperiod, CANPERIODS, 0, 1, 0, 2)                            \
    PARAM_ENTRY(CAT_TEST, testparam, "Hz", -100, 1000, 0, 0)                            \
    PARAM_ENTRY(CAT_VALVE, valve_out, VALVE, 0, 2, 0, 100)                              \
-   PARAM_ENTRY(CAT_TESLA_COOLANT_PUMP, coolant_pump_mode, AUTO_MANUAL, 0, 1, 0, 101)         \
+   PARAM_ENTRY(CAT_TESLA_COOLANT_PUMP, coolant_pump_mode, AUTO_MANUAL, 0, 1, 0, 101)   \
    PARAM_ENTRY(CAT_TESLA_COOLANT_PUMP, coolant_pump_manual_value, "RPM", 0, 4700, 0, 102) \
+   PARAM_ENTRY(CAT_EPS, eps_startup_delay, "ms", 0, 5000, 1000, 103)                   \
+   PARAM_ENTRY(CAT_VACUUM_PUMP, vacuum_hysteresis, "ms", 0, 5000, 500, 104)            \
+   PARAM_ENTRY(CAT_VACUUM_PUMP, vacuum_warning_delay, "ms", 0, 5000, 2000, 105)        \
+   PARAM_ENTRY(CAT_VACUUM_PUMP, vacuum_pump_threshold, "mBar", 0, 1000, 200, 106)      \
    VALUE_ENTRY(opmode, OPMODES, 2000)                                                  \
    VALUE_ENTRY(version, VERSTR, 2001)                                                  \
    VALUE_ENTRY(lasterr, errorListString, 2002)                                         \
@@ -64,7 +68,15 @@
    VALUE_ENTRY(valve_in_raw, "V", 2100)                                                \
    VALUE_ENTRY(valve_in, VALVE_STATE, 2101)                                            \
    VALUE_ENTRY(valve_auto_target, VALVE_TARGET, 2102)                                  \
-   VALUE_ENTRY(coolant_pump_automatic_value, "RPM", 2103)
+   VALUE_ENTRY(coolant_pump_automatic_value, "RPM", 2103)                              \
+   VALUE_ENTRY(coolant_pump_status, "On/Off", 2104)                                    \
+   VALUE_ENTRY(coolant_pump_fault, "Error", 2105)                                      \
+   VALUE_ENTRY(ignition_drive_in, "On/Off", 2106)                                      \
+   VALUE_ENTRY(eps_ignition_out, "On/Off", 2107)                                       \
+   VALUE_ENTRY(eps_startup_in, "On/Off", 2108)                                         \
+   VALUE_ENTRY(vacuum_pump_out, "On/Off", 2109)                                        \
+   VALUE_ENTRY(vacuum_sensor_in, ONOFF, 2110)                                          \
+   VALUE_ENTRY(vacuum_pump_insufficient, "Warning", 2111)
 
 /***** Enum String definitions *****/
 #define OPMODES "0=Off, 1=Run"
@@ -72,15 +84,15 @@
 #define CANPERIODS "0=100ms, 1=10ms"
 #define CAT_TEST "Testing"
 #define CAT_COMM "Communication"
-#define ONOFF "0=Off, 1=On, 2=na"
+#define ONOFF "0=No Vacuum, 1=Vacuum OK"
 #define VALVE "0=180deg, 1=90deg, 2=Auto"
 #define VALVE_STATE "0=180deg, 1=90deg, 2=Transition"
 #define VALVE_TARGET "0=180deg, 1=90deg"
 #define CAT_VALVE "Tesla Coolant Valve"
 #define AUTO_MANUAL "0=Manual, 1=Automatic"
 #define CAT_TESLA_COOLANT_PUMP "Tesla Coolant Pump"
-
-#define VERSTR STRINGIFY(4=VER-name)
+#define CAT_EPS "Electric Power Steering"
+#define CAT_VACUUM_PUMP "Vacuum Pump"
 
 /***** enums ******/
 
@@ -96,6 +108,26 @@ enum _modes
    MOD_OFF = 0,
    MOD_RUN,
    MOD_LAST
+};
+
+enum _coolant_pump_modes
+{
+   COOLANT_PUMP_MANUAL = 0,
+   COOLANT_PUMP_AUTO,
+   COOLANT_PUMP_LAST
+};
+
+enum _vacuum_pump_states
+{
+   VACUUM_PUMP_OFF = 0,
+   VACUUM_PUMP_ON,
+   VACUUM_PUMP_WARNING
+};
+
+enum _eps_states
+{
+   EPS_OFF = 0,
+   EPS_ON
 };
 
 // Generated enum-string for possible errors

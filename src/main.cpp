@@ -82,6 +82,8 @@ static void Ms10Task(void)
    // Set timestamp of error message
    ErrorMessage::SetTime(rtc_get_counter_val());
 
+   Param::SetInt(Param::ignition_drive_in, DigIo::ignition_drive_input_pin.Get());
+
    if (DigIo::test_in.Get())
    {
       // Post a test error message when our test input is high
